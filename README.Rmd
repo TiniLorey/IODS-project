@@ -1,0 +1,13 @@
+---
+title: "README"
+author: "TiniLorey"
+date: "November 3, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## project description
+*The course is intended to let me use R. The course is called __Introduction to open data science__ The linke to my learning diary is to be found here: [link](https://TiniLorey.github.io/IODS-project/)
