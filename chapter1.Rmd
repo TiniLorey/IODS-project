@@ -2,5 +2,5 @@
 # I hope I learn R fast
 
 *R course 2017*
-[link](https://mooc.helsinki.fi/mod/workshop/view.php?id=5599)
-*cheatsheet*  [link](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+<https://mooc.helsinki.fi/mod/workshop/view.php?id=5599>
+*cheatsheet*  <https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf>

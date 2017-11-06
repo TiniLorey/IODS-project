@@ -10,4 +10,4 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## project description
-*The course is intended to let me use R. The course is called __Introduction to open data science__ The linke to my learning diary is to be found here: [link](https://TiniLorey.github.io/IODS-project/)
+*The course is intended to let me use R. The course is called __Introduction to open data science__ The linke to my learning diary is to be found here: <https://TiniLorey.github.io/IODS-project/>
