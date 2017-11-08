@@ -1,6 +1,13 @@
 
-# I hope I learn R fast
+# R Studio is still strange, but R gets really fun!
+
+## Course diary Chapter 1
 
 *R course 2017*
-[link](https://mooc.helsinki.fi/mod/workshop/view.php?id=5599)
-*cheatsheet*  [link](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+<https://mooc.helsinki.fi/mod/workshop/view.php?id=5599>
+*cheatsheet*  <https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf>
+
+So the github and R studio installation and the mardown exercise were challenging. I am still very dependend on the instuctions, I feel a tad confused, for example my github desktop does up- and download things, but I still had to manually upload the rmd and html knits, as it didnt work otherwise.
+
+However, the R short and sweet was so much fun I continued the free introduction, which included fun matrix stuff too. the layout like a game makes this actually like a game, tricking post-docs into extra homework :D
+The extra course is <https://www.datacamp.com/courses/free-introduction-to-r> and I intend to do the social sciences one as well. I can see how the visualisation tools especially box plots will be great, as soon as its less stressy I intend to transform our current assay data from bar charts in Excel to box plots with R. 
