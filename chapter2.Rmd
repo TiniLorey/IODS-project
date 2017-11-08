@@ -1,6 +1,5 @@
 # Course diary chapter 2
 
-*R Studio is still strange, but R gets really fun!*
+*R datacamo exercise*
 
-So the github and R studio stuff still is very dependend on the instuctions, I feel a tad confused. However, the R short and sweet was so much fun I continued the free introduction, which included fun matrix stuff too. the layout like a game makes this actually like a game, tricking post-docs into extra homework :D
-The extra course is <https://www.datacamp.com/courses/free-introduction-to-r>
+I managed to do the datacamp exercise right after the lecture, but honestly I found it hard. MAybe its my inexperience with coding in general, but for example the gg plot exercises had me to exclude the column gender and yet use it to color code the scatter blots, it took me help to understand the problem. I think I go to much towards doing it fast instead of trying to get the underlying math of the exercises. I feel how much I can improve the quality of my visualisations, but it gets tricky if I dont develop an understanding for the language fast. And for the math underneath ;)
