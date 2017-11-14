@@ -5,11 +5,14 @@
 
 I managed to do the datacamp exercise right after the lecture, but honestly I found it hard. MAybe its my inexperience with coding in general, but for example the gg plot exercises had me to exclude the column gender and yet use it to color code the scatter blots, it took me help to understand the problem. I think I go to much towards doing it fast instead of trying to get the underlying math of the exercises. I feel how much I can improve the quality of my visualisations, but it gets tricky if I dont develop an understanding for the language fast. And for the math underneath ;)
 
-test 14.11
+test
+
 =======
 # Course diary chapter 2
 
 *R datacamo exercise*
 
 I managed to do the datacamp exercise right after the lecture, but honestly I found it hard. MAybe its my inexperience with coding in general, but for example the gg plot exercises had me to exclude the column gender and yet use it to color code the scatter blots, it took me help to understand the problem. I think I go to much towards doing it fast instead of trying to get the underlying math of the exercises. I feel how much I can improve the quality of my visualisations, but it gets tricky if I dont develop an understanding for the language fast. And for the math underneath ;)
+
+
 >>>>>>> 9b08c6f4de9a0cba9a23e22bacbaadb6cc6ae216
