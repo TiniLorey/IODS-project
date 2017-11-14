@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "IODS course project"
 author: "TiniLorey"
@@ -23,3 +24,30 @@ output:
 ```
 
 ***
+=======
+---
+title: "IODS course project"
+author: "TiniLorey"
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_depth: 2
+    fig_caption: true
+    fig_width: 6
+    fig_height: 4
+    code_folding: hide
+---
+
+***
+  
+```{r child = "chapter1.Rmd"}
+```
+  
+***
+  
+```{r child = "chapter2.Rmd"}
+```
+
+***
+>>>>>>> 9b08c6f4de9a0cba9a23e22bacbaadb6cc6ae216
