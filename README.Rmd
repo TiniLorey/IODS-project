@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 ---
 title: "README"
 author: "TiniLorey"
@@ -11,19 +11,5 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## project description
-*The course is intended to let me use R. The course is called __Introduction to open data science__ The linke to my learning diary is to be found here: <https://TiniLorey.github.io/IODS-project/>
-=======
----
-title: "README"
-author: "TiniLorey"
-date: "November 3, 2017"
-output: html_document
----
+The course is intended to let me use R. The course is called __Introduction to open data science__ The link to my learning diary is to be found here: <https://TiniLorey.github.io/IODS-project/>
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## project description
-*The course is intended to let me use R. The course is called __Introduction to open data science__ The linke to my learning diary is to be found here: [link](https://TiniLorey.github.io/IODS-project/)
->>>>>>> 9b08c6f4de9a0cba9a23e22bacbaadb6cc6ae216
