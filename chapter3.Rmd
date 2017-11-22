@@ -1,0 +1,128 @@
+---
+title: "chapter3.Rmd"
+author: "TiniLorey"
+date: "November 22, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# R Studio exercise 3 - data analysis
+##Step 1 is already done. 
+I dont use the echo=false option so that the code is visible
+
+##Step 2
+For step 2 I load the teacher dataset,as I had variable variables (see data wrangling part, something went fishy but I hope to still figure it out). The dataset is from <https://archive.ics.uci.edu/ml/datasets/Student+Performance>
+I create the url and then combine it to include coma separation as well as headers (column names)
+url <- "http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/alc.txt"
+url_Chapter3 <- paste(url, "alc_url.csv", sep = "," , header = TRUE)
+colnames(url_Chapter3)
+That actually didnt work, so saved it as csv alc1.csv
+
+I read the csv into R:
+alc1 <- read.csv("~/GitHub/IODS-project/alc1.csv")
+*Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'C:/Users/localadmin_lorey/Documents/GitHub/IODS-project/alc1.csv': No such file or directory*
+This is bollocs, as *View(alc1)* does show me the beautiful table...
+
+Now we print out the column names:  
+colnames(alc1)
+ [1] "school"     "sex"        "age"        "address"    "famsize"    "Pstatus"    "Medu"       "Fedu"       "Mjob"     [10] "Fjob"       "reason"     "nursery"    "internet"   "guardian"   "traveltime" "studytime"  "failures"   "schoolsup" [19] "famsup"     "paid"       "activities" "higher"     "romantic"   "famrel"     "freetime"   "goout"      "Dalc"      
+[28] "Walc"       "health"     "absences"   "G1"         "G2"         "G3"         "alc_use"    "high_use"  
+ alc_use and high_use I created in data wrangling.
+ 
+ If no one would know aout the dataset, here is a description: This data approach student achievement in secondary education of two Portuguese schools. The data attributes include student grades, demographic, social and school related features) and it was collected by using school reports and questionnaires. Two datasets are provided regarding the performance in two distinct subjects: Mathematics (mat) and Portuguese language (por). In [Cortez and Silva, 2008], the two datasets were modeled under binary/five-level classification and regression tasks. 
+ This and more information can be found here: <https://archive.ics.uci.edu/ml/datasets/Student+Performance>
+ 
+##Step 3
+I choose failures and absences, as I asuume they go hand in hand with a drinking habit, alongside with gender and grades, as they should be influenced.
+ 
+##Step 4
+ In step 4 we numerically and graphically explore the distributions of your chosen variables and their relationships with alcohol consumption. It seems this is fairly free so I will ggplot away:
+
+To make it easier I first try to apply what I learned at datacamp, and for that I need to istall a new package: install.packages("tidyr")
+More information on that package can be found here: <https://cran.r-project.org/web/packages/tidyr/index.html>
+
+
+Then I make some nice bar charts: 
+
+```{r}
+library(tidyr); library(dplyr); library(ggplot2)
+alc1 <- read.csv("~/GitHub/IODS-project/Data/alc1.csv")
+gather(alc1) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar()
+```
+That gives us an overview of all the useed variables as bar charts 
+Then I summarize the number of males/females, the genders mean grades, their hig_use of alcohol values, as well as the correlation between alcohol use and mean grades in the genders. Its conusing as it seems that women who drink a lot have a better mean grade as good girls, but for mean the effect of alcohol on the grades is negativ:
+```{r}
+library(dplyr); library(ggplot2)
+alc1 %>% group_by(sex) %>% summarise(count = n())
+alc1 %>% group_by(sex) %>% summarise (mean_grade = mean(G3))
+alc1 %>% group_by(sex, high_use) %>% summarise (count = n())
+alc1 %>% group_by(sex, high_use) %>% summarise (count = n(), mean_grade = mean(G3))
+```
+ 
+followed by some plots vsuaising the relation of ahigh alcohol use and grades for the genders: 
+```{r}
+library(ggplot2)
+g1 <- ggplot(alc1, aes(x = high_use, y = G3, col = sex))
+g1 + geom_boxplot() + ylab("grade")
+g2 <- ggplot(alc1, aes(x = high_use, y = absences, col = sex))
+g2 + geom_boxplot() + ylab("grade") + ggtitle("Student absences by alcohol consumption and sex")
+```
+
+##Step 5
+I now use a logistic regression model to see the relationship of fiailures, sex, and absences to high alcohol use
+```{r}
+m <- glm(high_use ~ failures + absences + sex, data = alc1, family = "binomial")
+summary(m)
+coef(m)
+```
+
+And further I calculate the odds ratios and their coefficients
+```{r}
+m <- glm(high_use ~ failures + absences + sex, data = alc1, family = "binomial")
+OR <- coef(m) %>% exp
+confint(m)
+CI <- confint(m) %>% exp
+cbind(OR, CI)
+```
+##Step 6
+I wanted to use the datacamp path:
+m <- glm(high_use ~ failures + absences + sex, data = alc1, family = "binomial")
+probabilities <- predict(m, type = "response")
+alc1 <- mutate(alc1, probability = probabilities)
+alc1 <- mutate(alc1, prediction = (alc$probability > 0.5))
+select(alc1, failures, absences, sex, high_use, probability, prediction) %>% tail(10)
+table(high_use = alc1$high_use, prediction = (alc1$probability > 0.5))
+library(dplyr); library(ggplot2)
+g <- ggplot(alc1, aes(x = probability, y = high_use, col = prediction))
+g + geom_point()
+table(high_use = alc1$high_use, prediction = alc1$prediction) %>% prop.table() %>% addmargins()
+
+However, suddenly failures is gone, and alc1 has only 167 variables left, so I went wrong during mutations? I had the same ussue during data wrangling, any input is highly appreciated!!!
+
+##Step 7 & 8
+I ws planning to follow the datacamp exercise agaoin: 
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc1$high_use, prob = alc$probability)
+define a loss function (average prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+} 
+compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = alc1$probability)
+K-fold cross-validation
+library(boot)
+cv <- cv.glm(data = alc1, cost = loss_func, glmfit = m, K = 10)
+average number of wrong predictions in the cross validation
+cv$delta[1]
+
+For some reason a lot of things didnt work, and I submit lie it is, I think I need to troubleshoot the loss of columns...
