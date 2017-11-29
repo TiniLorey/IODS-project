@@ -1,0 +1,253 @@
+---
+title: "chapter4.Rmd"
+author: "TiniLorey"
+date: "November 29, 2017"
+output: html_document
+---
+
+# __R Studio exercise 4 - Data analysis__
+## __Step 2__
+*Load the Boston data from the MASS package. Explore the structure and the dimensions of the data and describe the dataset briefly, assuming the reader has no previous knowledge of it. Details about the Boston dataset can be seen for example here. (0-1 points)*
+
+First I access the MASS package
+library(MASS)
+
+Then I load the requested dataset
+data("Boston")
+
+Then I explore the dataset using
+```{r}
+library(MASS)
+data("Boston")
+str(Boston)
+summary(Boston)
+dim(Boston)
+```
+
+The data frame of Boston includes data of __Housing Values in Suburbs of Boston__ using 506 obervations of 14 variables (columns), which are:
+
+
+crim - per capita crime rate by town.
+zn - proportion of residential land zoned for lots over 25,000 sq.ft.
+indus - proportion of non-retail business acres per town.
+chas - Charles River dummy variable (= 1 if tract bounds river; 0 otherwise).
+nox - nitrogen oxides concentration (parts per 10 million).
+rm - average number of rooms per dwelling.
+age - proportion of owner-occupied units built prior to 1940.
+dis - weighted mean of distances to five Boston employment centres.
+rad - index of accessibility to radial highways.
+tax - full-value property-tax rate per \$10,000.
+ptratio - pupil-teacher ratio by town.
+black - 1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town.
+lstat - lower status of the population (percent).
+medv - median value of owner-occupied homes in \$1000s.
+
+## __Step 3__
+
+*Show a graphical overview of the data and show summaries of the variables in the data. Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them. (0-2 points)*
+
+The first step is to create a plot matrix using pairs():
+```{r}
+pairs(Boston)
+```
+This gives us a bit too much graphics, it is hard to see what it is about. Therefor I check the correlation plots by calculating the correlation matrix and round it to 2 and then plotting it using the corrplot package.
+```{r}
+library(corrplot); library(dplyr)
+cor_matrix<-cor(Boston) %>% round(2)
+cor_matrix
+corrplot(cor_matrix, method="circle")
+```
+
+That gives us a neat crrelation matrix with correlation factors between -1 and 1, visualised like a heatmap. Blue means strong positive correlation, red is strong negative. This allows a rapid overvies, for example, the table suggests that crime is correlating most with access to radial highways and the full value property tax; seems logical as fancier houses with easier access probably make a richer and easier target. Big residential plots (zn) correlated most with the weighted mean of distances to five Boston employment centres (dis), indus, the proportion of non-retail business acres per town, corelates most wirh the nitrogen oxide concentration (factories can cause that), and had a very strong negative correlation with the distance to employment centers. 
+
+Access to radial highways and the full value property tax correlate strongly, and a lower status of the population strongly negatively correlates with the  median value of owner-occupied homes in \$1000s.The latter has a strong positive correlation with the average number of rooms per dwelling.
+
+## __STEP 4__
+
+*Standardize the dataset and print out summaries of the scaled data. How did the variables change? Create a categorical variable of the crime rate in the Boston dataset (from the scaled crime rate). Use the quantiles as the break points in the categorical variable. Drop the old crime rate variable from the dataset. Divide the dataset to train and test sets, so that 80% of the data belongs to the train set. (0-2 points)*
+
+First I center and standardize variables using scale() and create a scaled data frame, and then look at the summary, the values have changed..
+boston_scaled <- scale(Boston)
+
+
+```{r}
+
+boston_scaled <- scale(Boston)
+summary(boston_scaled)
+class(boston_scaled)
+boston_scaled <- as.data.frame(boston_scaled)
+```
+Then I make a summary of the scaled crime rate by using $ as selector. Next, I create a quantile vector of crim and print it to get the values in percent, then I create a categorical variable 'crime' and print the table. 
+To replace the old crime rate variable I use dyplyr::select and add the new one. 
+
+```{r}
+bins <- quantile(boston_scaled$crim)
+bins
+crime <- cut(boston_scaled$crim, breaks = bins, include.lowest = TRUE, labels = c("low", "med_low", "med_high", "high"))
+table(crime)
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+boston_scaled <- data.frame(boston_scaled, crime)
+
+```
+
+To use a statistical method to predict something, we need to be able to test how well the predictions fit. To do that we split the  data into test and train sets, and  train of the model with the train set and predict on new data  with the test set. This way you have true classes / labels for the test data, and you can calculate how well the model performed in prediction.
+
+To split the dataset we use nrow() on the boston_scaled to get the number of rows (n) in the dataset. Then we choose randomly 80% of the rows and save the row numbers to ind, that is the train set, and the 20% of rows which are not in the train set ind is the test set.
+```{r}
+n <- nrow(boston_scaled)
+ind <- sample(n,  size = n * 0.8)
+train <- boston_scaled[ind,]
+test <- boston_scaled[-ind,]
+correct_classes <- test$crime
+test <- dplyr::select(test, -crime)
+```
+
+## __Step 5__
+*Fit the linear discriminant analysis on the train set. Use the categorical crime rate as the target variable and all the other variables in the dataset as predictor variables. Draw the LDA (bi)plot. (0-3 points)*
+
+First I make a linear discriminant analysis on the train set using crime as the target variable and print it, then I insert biplot arrows using lda.arrows, target the classes as numeric, and plot the results.
+
+
+```{r}
+lda.fit <- lda(crime ~ ., data = train)
+lda.fit
+
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+classes <- as.numeric(train$crime)
+plot(lda.fit, dimen = 2, col = classes, pch = classes)
+lda.arrows(lda.fit, myscale = 1)
+
+```
+
+The resulting plot gives us clusters of low, med_low, med_high, and high crimes and an arrowtendency of the variables. the plot looks (and works) similar to a principal component analysis. 
+The most outstanding thing at first glance is that rad, the access to radial highways, seems to correlate most with med_high crime rates, all other variables are clusteres together.
+
+## __Step 6__
+
+*Save the crime categories from the test set and then remove the categorical crime variable from the test dataset. Then predict the classes with the LDA model on the test data. Cross tabulate the results with the crime categories from the test set. Comment on the results. (0-3 points)*
+
+I use predict() to predict the classes pf the LDA model on the test data, and print the crosstable using the corrected classes
+
+```{r}
+lda.pred <- predict(lda.fit, newdata = test)
+table(correct = correct_classes, predicted = lda.pred$class)
+```
+
+The table shows that especially in the medium range the correlation of train and test sets is not good, while for high crime it works well. So we definitely need to fit the model for the whole range!
+
+## __Step 7__
+*Reload the Boston dataset and standardize the dataset (we did not do this in the Datacamp exercises, but you should scale the variables to get comparable distances). Calculate the distances between the observations. Run k-means algorithm on the dataset. Investigate what is the optimal number of clusters and run the algorithm again. Visualize the clusters (for example with the pairs() or ggpairs() functions, where the clusters are separated with colors) and interpret the results. (0-4 points)*
+
+I had to gogle here a bit, but I can reload the original dataset using reboston <- Boston, which gives me again the 506 observations in 14 columns. 
+```{r}
+reboston <- Boston
+summary(reboston)
+dim(reboston)
+```
+
+Then I need to scale the dataset again, using the same method as before to get similar distances between the datapoints: 
+
+```{r}
+reboston_scaled <- scale(reboston)
+summary(reboston_scaled)
+```
+
+Now we are back in the same flow as the datacamp, so I calculate the euclidean distances using dist() and save it as a (euclidean) disctances matrix:
+
+```{r}
+dist_eu <- dist(Boston)
+summary(dist_eu)
+```
+
+Next, we use k-means clustering to cluster our data based on similarity of the distance variable. I start with 3 centers as in the datacamp exercise and go from there.To see what happened I will plot the clustering as pairs
+
+```{r}
+km <-kmeans(Boston, centers = 3)
+pairs(Boston, col = km$cluster)
+```
+
+This is pretty and colorful but again far too much data to comprehend on such a small sub-plot. I use Boston[1:7] and Boston[8:14] to make it easier.
+
+```{r}
+pairs(Boston[1:7], col = km$cluster)
+pairs(Boston[8:14], col = km$cluster)
+```
+
+So variables 1-7 show that indus, nox, rm, and age lead to a pretty messy picture, same as dis in the next plot. The other varables seem to give some sort of order. 
+
+Instead of manually adjusting the code that often to see the optimal clustering number (yes, I did that now a few times :D) I use R
+
+```{r}
+#Optimal cluster amount
+set.seed(123)
+
+# determine the number of clusters
+k_max <- 10
+
+# calculate the total within sum of squares
+twcss <- sapply(1:k_max, function(k){kmeans(dist_eu, k)$tot.withinss})
+
+# visualize the results
+plot(1:k_max, twcss, type='b')
+```
+
+SO based on that graph I am confused: I think 6 is good, it seems to have the the same low diversity of values as 8 and 10, but the sharpest drop is after 1, so 2 might be the best. However, as I think the least variation should be technically the best I repeat the clustering with 6:
+```{r}
+
+pairs(Boston, col = km$cluster)
+pairs(Boston[1:7], col = km$cluster)
+pairs(Boston[8:14], col = km$cluster)
+```
+
+```{r}
+km <-kmeans(Boston, centers = 6)
+```
+
+And it actually looks much cleaner!
+
+## Bonus-time!
+*Bonus: Perform k-means on the original Boston data with some reasonable number of clusters (> 2). Remember to standardize the dataset. Then perform LDA using the clusters as target classes. Include all the variables in the Boston data in the LDA model. Visualize the results with a biplot (include arrows representing the relationships of the original variables to the LDA solution). Interpret the results. Which variables are the most influencial linear separators for the clusters? (0-2 points to compensate any loss of points from the above exercises)*
+
+OK, I start, lets see how far I get:
+the scaled boston project will be clustered, lets say 3 centers. 
+```{r}
+rereboston <- Boston
+rerescaled_boston <- scale(rereboston)
+km <-kmeans(rerescaled_boston, centers = 3)
+pairs(rerescaled_boston, col = km$cluster)
+
+```
+The problem with the following is that I would need cluster as a variable to have it as a target variable...and I couldnt figure out how to define that. However, This is what I would have done:
+n <- nrow(rerescaled_boston)
+ind <- sample(n,  size = n * 0.8)
+train <- rerescaled_boston[ind,]
+test <- rerescaled_boston[-ind,]
+correct_classes <- test$cluster
+test <- dplyr::select(test, -cluster)
+lda.fit <- lda(cluster ~ ., data = train)
+lda.fit
+
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+classes <- as.numeric(train$crime)
+plot(lda.fit, dimen = 2, col = classes, pch = classes)
+lda.arrows(lda.fit, myscale = 1)
+```{r}
+
+```
+
+
+
