@@ -1,0 +1,175 @@
+---
+title: "chapter5.Rmd"
+author: "TiniLorey"
+date: "December 6, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#Data analysis exercise chapter 5
+
+## Step 1
+*Load the 'human' data into R. Explore the structure and the dimensions of the data and describe the dataset briefly, assuming the reader has no previous knowledge of it (this is now close to the reality, since you have named the variables yourself). (0-1 point)*
+I assume my dataset is correct (I had 155 observations of 8 variables) but I am not sure if the dataset is having an issue as it seems GNI is still non numeric. Therefore I load the provided one. The dataset includes the following:
+_Original data from: <http://hdr.undp.org/en/content/human-development-index-hd>_
+_Retrieved, modified and analyzed by Tuomo Nieminen 2017_
+
+The data combines several indicators from most countries in the world
+
+"Country" = Country name
+
+__Health and knowledge__
+
+"GNI" = Gross National Income per capita
+"Life.Exp" = Life expectancy at birth
+"Edu.Exp" = Expected years of schooling 
+"Mat.Mor" = Maternal mortality ratio
+"Ado.Birth" = Adolescent birth rate
+
+__Empowerment__
+
+"Parli.F" = Percetange of female representatives in parliament
+"Edu2.F" = Proportion of females with at least secondary education
+"Edu2.M" = Proportion of males with at least secondary education
+"Labo.F" = Proportion of females in the labour force
+"Labo.M" " Proportion of males in the labour force
+
+"Edu2.FM" = Edu2.F / Edu2.M
+"Labo.FM" = Labo2.F / Labo2.M
+```{r}
+library(MASS)
+url <- "http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human2.txt"
+human_ <- read.csv(url)
+str(human_)
+summary(human_)
+dim(human_)
+```
+
+
+##Step 2
+_Show a graphical overview of the data and show summaries of the variables in the data. Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them. (0-2 points)_
+
+I follow the same routine like in chapter 4:
+```{r}
+library(ggplot2)
+library(corrplot); library(dplyr)
+pairs(human_)
+library(tidyr); library(dplyr); library(ggplot2)
+
+# glimpse at the alc data
+glimpse(human_)
+
+# use gather() to gather columns into key-value pairs and then glimpse() at the resulting data
+gather(human_) %>% glimpse
+
+# draw a bar plot of each variable
+gather(human_) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar()
+
+
+cor_matrix<-cor(human_) %>% round(2)
+cor_matrix
+corrplot(cor_matrix, method="circle", type = "upper", cl.pos = "b", tl.pos = "d", tl.cex = 0.6)
+```
+
+The correlation plot shows that the strongest positive correlations are bewteen Edu.Exp and Life.Exp as well as between Mat.Mor ad Ado.Birth. The strongest negative correlation is bwtween Life.exp and Mat.Mor, directly followed by the correlations between Edu2.FM, Edu.Exp to Mat.Mor. Ado.Birth strongly negative correlates with Edu.Exp and Life.Exp.
+
+The pairs plot of the variables seems as usual very hectic, but especally in GNI there seems a stronger pattern building. 
+
+The variable plots seem to not say much on first glance, however, the Life.Exp seems between 50 and 85.
+
+##Step 3
+_Perform principal component analysis (PCA) on the not standardized human data. Show the variability captured by the principal components. Draw a biplot displaying the observations by the first two principal components (PC1 coordinate in x-axis, PC2 coordinate in y-axis), along with arrows representing the original variables. (0-2 points)_
+
+The unscaled biplot is very messy, everything except for GNI seems clustered together. Same goes for the countries, Except for outliers like Sierra LEone and Chad they all seem rather close on the Y axis, and Qatar is a huge outlier on the x-axis.
+
+```{r}
+# perform principal component analysis (with the SVD method)
+pca_human <- prcomp(human_)
+biplot(pca_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"))
+```
+
+##Step 4
+_Standardize the variables in the human data and repeat the above analysis. Interpret the results of both analysis (with and without standardizing). Are the results different? Why or why not? Include captions (brief descriptions) in your plots where you describe the results by using not just your variable names, but the actual phenomenons they relate to. (0-4 points)_
+
+```{r}
+# standardize the variables
+human_std <- scale(human_)
+
+# print out summaries of the standardized variables
+summary(human_std)
+
+# perform principal component analysis (with the SVD method)
+pca_human <- prcomp(human_std)
+
+# draw a biplot of the principal component representation and the original variables
+biplot(pca_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"))
+```
+
+In the biplot now its a bit better visible. It seems that the percetange of female representatives in parliament stongly correlates with the quotient of female and male labour force participation.A country which seems to stand out in that direction is Rwanda. Maternal mortality ratio strongly correlates with the adolescent birth rate. Countries on that end of the clustering are Burkina Faso, Ivory coast, Niger, Sierra Leone and some which are hard to read. All the other variables cluster together to the negative PC1 side. The countries are now more centered. I still wish for a zoom option :)
+Overall, the scaled set is the only which really works, otherwise the clustering seems totally offand the vectors cannot be drawn.
+
+##Step 5
+_Give your personal interpretations of the first two principal component dimensions based on the biplot drawn after PCA on the standardized human data. (0-2 points)_
+```{r}
+# create and print out a summary of pca_human
+s <- summary(pca_human)
+s
+
+# rounded percetanges of variance captured by each PC
+pca_pr <- round(100*s$importance[2, ], digits = 1)
+
+# print out the percentages of variance
+pca_pr
+
+# create object pc_lab to be used as axis labels
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+
+# draw a biplot
+biplot(pca_human, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2])
+```
+
+
+It seems that PC1 covers 53.6 % of the dataset, and PC2 16.2 %. 2-dimensional was a good idea considering that PC3 covers only 9 % of the set. 
+
+
+##Step 6
+_Load the tea dataset from the package Factominer. Explore the data briefly: look at the structure and the dimensions of the data and visualize it. Then do Multiple Correspondence Analysis on the tea data (or to a certain columns of the data, it's up to you). Interpret the results of the MCA and draw at least the variable biplot of the analysis. You can also explore other plotting options for MCA. Comment on the output of the plots. (0-4 points)_
+```{r}
+library("FactoMineR")
+data("tea")
+str(tea)
+dim(tea)
+gather(tea) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+```
+
+So tea is a huge dataset, 300 observations of 36 variables The variables seem to cover all the when, where, and hows of tea consumption. 
+The ggplot looks horrid as the attributes are not identical across measure variables. I therefore make the tea time subset one and visualize that.
+```{r}
+# column names to keep in the dataset
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+# select the 'keep_columns' to create a new dataset
+tea_time <- dplyr::select(tea, one_of(keep_columns))
+
+# look at the summaries and structure of the data
+summary(tea_time)
+str(tea_time)
+
+# visualize the dataset
+gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+```
+
+Then I run the MCA:
+```{r}
+# multiple correspondence analysis
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+summary(mca)
+
+# visualize MCA
+plot(mca, invisible=c("ind"), habillage = "quali") 
+```
+It seems that unpackaged tea is mainly consumed/purchased at the tea shop. Either PC dimension covers more than 15 % of the dataset. 
